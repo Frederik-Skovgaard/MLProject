@@ -5,7 +5,7 @@ using MLModel1_ConsoleApp1;
 using System.IO;
 
 // Create single instance of sample data from first line of dataset for model input
-var imageBytes = File.ReadAllBytes(@"C:\Users\U424546\Downloads\Art\Abstract\Abstract1.jpg");
+var imageBytes = File.ReadAllBytes(@"C:\Users\U424546\OneDrive - Danfoss\Desktop\Art\SuperDupper\Abstract\Abstract1.jpg");
 MLModel1.ModelInput sampleData = new MLModel1.ModelInput()
 {
     ImageSource = imageBytes,

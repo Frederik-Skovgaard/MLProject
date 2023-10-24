@@ -1,0 +1,35 @@
+﻿@page "/"
+
+@inject IJSRuntime JS
+
+<label for="filePicker" class="label">
+    <span class="title">Vælg en fil</span>
+    <InputFile id="filePicker" class="fileUpload invisible" @ref="inputFile" accept=".jpg" OnChange="@(async e => {await ShowPreview(e);})" />
+</label>
+
+
+@if (imgComponent != null)
+{
+    <div>
+        <img alt="Component" class="fancyImg" @ref="previewImageElem" width="375" />
+    </div>
+}
+else
+{
+    <div>
+        <img alt="Component" class="fancyImg" src="Phoot/default.jpg" width="375" />
+    </div>
+}
+@code {
+    //--------| Preview Img |--------//
+    private InputFile? inputFile;
+    private ElementReference previewImageElem;
+    private InputFileChangeEventArgs imgComponent = null!; //Save new image
+
+    private async Task ShowPreview(InputFileChangeEventArgs e)
+    {
+        imgComponent = e;
+        StateHasChanged();
+        await JS.InvokeVoidAsync("previewImage", inputFile!.Element, previewImageElem);
+    }
+}
