@@ -1,0 +1,161 @@
+﻿@page "/"
+@using MLProject;
+
+@inject IJSRuntime JS
+
+<div class="row">
+    <div class="col-4"
+         style="
+         border-radius: 10px;
+         padding: 2rem;
+         padding-bottom:1rem;
+         margin-left: auto;
+         box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;">
+
+        @if (imgComponent != null)
+        {
+            <div>
+                <img alt="Component" class="fancyImg" @ref="previewImageElem" style="width: -webkit-fill-available;
+                border: solid 4px black;
+                padding: 3px;" />
+            </div>
+        }
+        else
+        {
+            <div>
+                <img alt="Component" class="fancyImg" src="Photo/default.jpg" style="width: -webkit-fill-available;" />
+            </div>
+        }
+
+        <label for="filePicker" class="label mt-3">
+            <span class="title">Vælg en fil</span>
+            <InputFile id="filePicker" class="fileUpload invisible" @ref="inputFile" accept=".jpg" OnChange="@(async e => {await ShowPreview(e);})" />
+        </label>
+    </div>
+    <div class="col-3" style="
+        border-radius: 10px;
+        padding: 2rem;
+        white-space: pre-line;
+        margin-left: 1rem;
+        margin-right: auto;
+        height: max-content;
+        box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;">
+
+        <div class="flex-column text-nowrap">
+            @{
+                int first = 0;
+                if (artStyles.Count() != 0)
+                {
+                    foreach (var item in artStyles)
+                    {
+
+                        if (first == 0)
+                        {
+                            <div>
+                                <label class="fw-bold">@item</label>
+                            </div>
+                        }
+                        else
+                        {
+                            <div>
+                                <label>@item</label>
+                            </div>
+                        }
+                        first++;
+                    }
+                }
+                else
+                {
+                    <div>
+                        <label>0,00% Abstract</label>
+                    </div>
+                    <div>
+                        <label>0,00% Anime</label>
+                    </div>
+                    <div>
+                        <label>0,00% Cubsim</label>
+                    </div>
+                    <div>
+                        <label>0,00% Graffiti</label>
+                    </div>
+                    <div>
+                        <label>0,00% Impressionist</label>
+                    </div>
+                     <div>
+                        <label>0,00% Pop</label>
+                    </div>
+                     <div>
+                        <label>0,00% Surrealism</label>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<string> artStyles = new();
+
+    //--------| Preview Img |--------//
+    private InputFile? inputFile;
+    private ElementReference previewImageElem;
+    private InputFileChangeEventArgs imgComponent = null!; //Save new image
+
+    protected async Task ShowPreview(InputFileChangeEventArgs e)
+    {
+        imgComponent = e;
+        StateHasChanged();
+        await JS.InvokeVoidAsync("previewImage", inputFile!.Element, previewImageElem);
+        artStyles.Clear();
+        await Program();
+    }
+
+    protected async Task Program()
+    {
+        byte[] imageBytes;
+        var read = await Task.Run(() => imgComponent.File.OpenReadStream());
+        using (var ms = new MemoryStream())
+        {
+            await read.CopyToAsync(ms);
+            imageBytes = ms.ToArray();
+        }
+
+        MLModel1.ModelInput sampleData = new MLModel1.ModelInput()
+            {
+                ImageSource = imageBytes,
+            };
+
+        var sortedScoresWithLabel = MLModel1.PredictAllLabels(sampleData);
+
+        foreach (var score in sortedScoresWithLabel.OrderByDescending(x => x.Value))
+        {
+            switch (score.Key)
+            {
+                case "Abstract":
+                    artStyles.Add($"{(score.Value * 100).ToString("0.00")}% Abstract");
+                    break;
+                case "Anime":
+                    artStyles.Add($"{(score.Value * 100).ToString("0.00")}% Anime");
+                    break;
+                case "Cubsim":
+                    artStyles.Add($"{(score.Value * 100).ToString("0.00")}% Cubsim");
+                    break;
+                case "Graffiti":
+                    artStyles.Add($"{(score.Value * 100).ToString("0.00")}% Graffiti");
+                    break;
+                case "Impressionist":
+                    artStyles.Add($"{(score.Value * 100).ToString("0.00")}% Impressionist");
+                    break;
+                case "Pop":
+                    artStyles.Add($"{(score.Value * 100).ToString("0.00")}% Pop");
+                    break;
+                case "Surrealism":
+                    artStyles.Add($"{(score.Value * 100).ToString("0.00")}% Surrealism");
+                    break;
+                default:
+                    break;
+            }
+        }
+
+    }
+}

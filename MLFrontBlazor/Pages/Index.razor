@@ -1,4 +1,5 @@
 ﻿@page "/"
+@using MLProject;
 
 @inject IJSRuntime JS
 
@@ -26,10 +27,30 @@ else
     private ElementReference previewImageElem;
     private InputFileChangeEventArgs imgComponent = null!; //Save new image
 
-    private async Task ShowPreview(InputFileChangeEventArgs e)
+    protected async Task ShowPreview(InputFileChangeEventArgs e)
     {
         imgComponent = e;
-        StateHasChanged();
         await JS.InvokeVoidAsync("previewImage", inputFile!.Element, previewImageElem);
+        Program();
+    }
+
+    protected void Program()
+    {
+        Console.WriteLine(inputFile.ToString());
+        //var imageBytes = File.ReadAllBytes(inputFile.);
+        // MLModel1.ModelInput sampleData = new MLModel1.ModelInput()
+        // {
+        //     ImageSource = imageBytes,
+        // };
+
+        // // Make a single prediction on the sample data and print results.
+        // var sortedScoresWithLabel = MLModel1.PredictAllLabels(sampleData);
+        // Console.WriteLine($"{"Class",-40}{"Score",-20}");
+        // Console.WriteLine($"{"-----",-40}{"-----",-20}");
+
+        // foreach (var score in sortedScoresWithLabel)
+        // {
+        //     Console.WriteLine($"{score.Key,-40}{score.Value,-20}");
+        // }
     }
 }
